@@ -1,16 +1,21 @@
 <?php get_header( );?>
 
 <main class="container my-4">
+    <h1 class="my-4"><?php the_title()?></h1>
     <?php if(have_posts()){
-            while(have_posts()){
-                the_post();
+        while(have_posts()){
+            the_post();
+            $taxonomy = get_the_terms( get_the_ID(  ),'categoria-productos'); // Nos trae los terminos de la taxonomia recibe id post y la categoria que queremos que traega
             ?>
-                <h1 class="my-4"><?php the_title()?></h1>
+            
                 <div class="row">
-                    <div class="col-4">
+                    <div class="col-6">
                         <?php the_post_thumbnail('large');?>
                     </div>
-                    <div class="col-8">
+                    <div class="col-6">
+                        <?php echo do_shortcode( '[contact-form-7 id="54" title="Contact form 1"]' );?>
+                    </div>
+                    <div class="col-12">
                         <?php the_content()?>
                     </div>
                 </div>
@@ -22,6 +27,13 @@
                     'post_per_page' => 6,
                     'order'         => 'ASC',
                     'orderby'       => 'title',
+                    'tax_query'     => array(
+                        array(
+                            'taxonomy' =>'categoria-productos',
+                            'field' => 'slug',
+                            'terms' => $taxonomy[0]->slug,
+                        )
+                    )//query se realice sobre una taxonomia en particular
                 );
                 $productos = new WP_Query($args);
                 ?>
