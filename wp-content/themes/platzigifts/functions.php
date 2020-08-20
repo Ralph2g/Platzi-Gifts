@@ -19,6 +19,11 @@ function assets(){
     wp_register_script( 'popper', 'https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js', '', '1.16', true);
     wp_enqueue_script( 'bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js', array('jquery','popper'), '4.4.1', true );
     wp_enqueue_script( 'custom', get_template_directory_uri(  ).'/assets/js/custom.js', '', '1.0', true );
+
+    //Nos permite enviar información desde nuestro archivo php en un objeto a un archivo js determinado
+    wp_localize_script( 'custom', 'pg', array(
+        'ajaxurl' => admin_url( 'admin-ajax.php')// se le paas una extención especifica de un archivo php  el admin ajax es el archivo predeterminado
+    ) );
 }
 
 add_action( 'wp_enqueue_scripts', 'assets');
@@ -79,4 +84,41 @@ function pgRegisterTax () {
 
 add_action( 'init', 'pgRegisterTax' );
 
+
+
+
+//Definimos la función de  filtrado deproductos
+
+add_action( "wp_ajax_nopriv_pgFiltroProductos","pgFiltroProductos");
+add_action( "wp_ajax_pgFiltroProductos","pgFiltroProductos");
+function pgFiltroProductos(){
+    $args = array(
+        'post_type'     => 'producto',
+        'post_per_page' => -1,//el menos uno es paratraer todoslos elementps
+        'order'         => 'ASC',
+        'orderby'       => 'title',  
+    );
+    if($_POST['categoria']){
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' =>'categoria-productos',
+                'field' => 'slug',
+                'terms' => $_POST['categoria'],
+            )
+        );//query se realice sobre una taxonomia en particular
+    }
+    $productos = new WP_Query($args);
+    if($productos->have_posts(  )){
+        $return = array();
+        while ($productos->have_posts()) {
+            $productos->the_post(  );
+            $return[] =array(
+                'imagen'=> get_the_post_thumbnail( get_the_id(), 'large'),
+                'link' => get_the_permalink(),
+                'titulo' => get_the_title()
+            );
+        };
+        wp_send_json($return);
+    };
+};
 ?>
