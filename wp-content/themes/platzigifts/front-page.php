@@ -55,6 +55,14 @@
                 ?>
             </div>
         </div>
+        <div class="row">
+                <div class="col-12">
+                    <h1>novedades</h1>
+                    <div id="resultado-novedades" class="row">
+
+                    </div>
+                </div>
+        </div>
     </main>
 
 
