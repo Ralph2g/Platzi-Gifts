@@ -22,8 +22,8 @@ function assets(){
 
     //Nos permite enviar información desde nuestro archivo php en un objeto a un archivo js determinado
     wp_localize_script( 'custom', 'pg', array(
-        'ajaxurl' => admin_url( 'admin-ajax.php')// se le paas una extención especifica de un archivo php  el admin ajax es el archivo predeterminado
-        'apiurl' => home_url( 'wp-json/pg/v1/', )
+        'ajaxurl' => admin_url( 'admin-ajax.php'),// se le paas una extención especifica de un archivo php  el admin ajax es el archivo predeterminado
+        'apiurl' => home_url( 'wp-json/pg/v1/')
     ) );
 }
 
@@ -135,8 +135,8 @@ function novedadesAPI(){
         array(
             'methods' => 'GET',
             'callback' => 'pedidoNovedades'
-        ), 
-        $override:boolean )
+        ),
+    );
 };
 
 function pedidoNovedades($data){
@@ -147,7 +147,7 @@ function pedidoNovedades($data){
         'order'         => 'ASC',
         'orderby'       => 'title',  
     );
-    $novedades new WP_Query($args);
+    $novedades =new WP_Query($args);
     if($novedades->have_posts(  )){
         $return = array();
         while ($novedades->have_posts()) {
@@ -159,5 +159,25 @@ function pedidoNovedades($data){
             );
         };
         return $return;
+    }
 }
+//Bloque de Gutenberg
+add_action( 'init', 'pgRegisterBlock');
+function pgRegisterBlock(){
+    $assets = include_once get_template_directory(  ).'/blocks/build/index.asset.php';
+    
+    wp_register_script( 
+        'pg-block', //handler
+        get_template_directory_uri(  ).'/blocks/build/index.js',// directorio
+        $assets['dependencies'],//dependencias 
+        $assets['version'], //identificar la verision
+    );
+    
+    register_block_type( 
+        'pg/basic', //nombre del slug del bloque
+        array(
+            'editor_script' => 'pg-block' //a editor script le pasamos el handler de  donde registramos el script
+        ),
+    );
+};
 ?>
